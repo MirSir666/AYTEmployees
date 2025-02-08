@@ -1,0 +1,71 @@
+﻿
+.icard {
+    display: grid;
+    border-radius: 5px;
+    background: #FFF;
+    position: relative;
+    color: #353A4A;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 165px;
+    margin: 2.5px;
+}
+
+
+.card_down {
+    height: 44px;
+    line-height: 44px;
+    padding: 0 10px;
+    background: #F3F2EF;
+    border-radius: 0px 0px 5px 5px;
+    background-color: rgba(0, 0, 0, 0.1);
+    font-size: 1.2rem;
+}
+
+.card_middle {
+    min-height: 40px;
+}
+
+.card_up {
+    display: flex;
+    justify-content: space-between;
+    height: 44px;
+    line-height: 44px;
+    padding: 0 10px;
+    font-size: 1.2rem;
+}
+
+.r_jin {
+    background: var(--r_jin);
+    color: var(--white);
+}
+
+.r_yu {
+    background: var(--r_yu);
+    color: var(--white);
+}
+
+.r_xiuli {
+    background: var(--r_xiuli);
+    color: var(--white);
+}
+
+.r_xiuxi {
+    background: var(--r_xiuxi);
+    color: var(--white);
+}
+
+.r_qing {
+    background: var(--r_qing);
+    color: var(--white);
+}
+
+.r_zhang {
+    background: var(--r_zhang);
+    color: var(--white);
+}
+
+.r_zhong {
+    background: var(--r_zhong);
+    color: var(--white);
+}

@@ -1,0 +1,182 @@
+﻿
+<div class="modal overlay" id="goodsWindow">
+    <div class="modelwindow">
+        <div class="model_header">@Project.GoodsName</div>
+        <div class="model_content">
+            <div class="list">
+                <div class="item">
+                    <h2>上钟类型</h2>
+                    <div class="input">
+                        <div class="buttons-group full blue">
+                            <button class="@WorkTypeClass(WorkType.轮)  radius-left" @onclick=@(()=>WorkTypeChanged(WorkType.轮))>轮钟</button>
+                            <button class="@WorkTypeClass(WorkType.点) " @onclick=@(()=>WorkTypeChanged(WorkType.点))>点钟</button>
+                            <button class="@WorkTypeClass(WorkType.括)" @onclick=@(()=>WorkTypeChanged(WorkType.括))>括钟</button>
+                            <button class="@WorkTypeClass(WorkType.加) " @onclick=@(()=>WorkTypeChanged(WorkType.加))>加钟</button>
+                            <button class="@WorkTypeClass(WorkType.选) radius-right" @onclick=@(()=>WorkTypeChanged(WorkType.选))>选钟</button>
+                        </div>
+                       
+                    </div>
+                </div>
+                @if (WorkType == WorkType.轮)
+                {
+                    <div class="item">
+                        <h2>技师类型</h2>
+                        <div class="input">
+                            <div class="buttons-group full blue">
+                                <button class="@GenderClass("0")" @onclick=@(()=>GenderChanged("0"))>不限</button>
+                                <button class="@GenderClass("1")  radius-left" @onclick=@(()=>GenderChanged("1"))>女技师</button>
+                                <button class="@GenderClass("2") " @onclick=@(()=>GenderChanged("2"))>男技师</button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="item">
+                        <h2>指定技师</h2>
+                        <div class="input">
+       
+                            <MobileInputSelect Placeholder="请选择技师" OnSuccess=ChangeValue Data=ArtificerData TitleText="选择技师" @ref=SelectArtificerRef>
+
+
+                            </MobileInputSelect>
+
+
+                       </div>
+                    </div>
+                }
+
+               
+               
+            </div>
+        </div>
+        <div class="model_footer">
+            <button @onclick="Close" >取消</button>
+            <button @onclick="Ok">确定</button>
+        </div>
+    </div>
+
+</div>
+@layout NullLayout
+@inject IBasePage page;
+@inject IWorkbenchesService service;
+@code {
+    public GetGoodsProjecListOutput Project { get; set; } = new GetGoodsProjecListOutput();
+
+    /// <summary>
+    /// 性别 1女 2男
+    /// </summary>
+    public string? Gender { get; set; } = "0";
+    /// <summary>
+    /// 上钟类型: 
+    /// </summary>
+    public WorkType WorkType { get; set; } = WorkType.轮;
+
+    /// <summary>
+    /// 技师id
+    /// </summary>
+    public long ArtificerId { get; set; } = 0;
+    MobileInputSelect SelectArtificerRef;
+
+    public List<MobileSelectItem> ArtificerData { get; set; } = new List<MobileSelectItem>();
+
+    [Parameter]
+    public EventCallback<OrderDetailInfo2> ValChanged { get; set; }
+
+    public void ChangeValue(object id)
+    {
+        if (id != null)
+            ArtificerId = Convert.ToInt64(id);
+    }
+
+    public void WorkTypeChanged(WorkType workType)
+    {
+        WorkType = workType;
+        this.StateHasChanged();
+    }
+
+    public string WorkTypeClass(WorkType workType)
+    {
+        return WorkType == workType ? "teal-700" : "teal";
+    }
+
+    public string GenderClass(string gender)
+    {
+        return Gender == gender ? "teal-700" : "teal";
+    }
+
+    public void GenderChanged(string gender)
+    {
+        Gender = gender;
+        this.StateHasChanged();
+    }
+    public async void ArtificerInit()
+    {
+        var list = await service.GetCurrentTechnicianList(new CurrentTechnicianListSearch() { Status = -3 });
+        ArtificerData = list.Select(o => new MobileSelectItem() { Label=o.ArtificerName,Value=o.ArtificerId }).ToList();
+    }
+
+    public void InitValue()
+    {
+        Gender = "0";
+        WorkType  = WorkType.轮;
+        ArtificerId = 0;
+    }
+
+    public void Open(GetGoodsProjecListOutput project)
+    {
+        Project = project;
+        InitValue();
+        StateHasChanged();
+        page.JavaScriptRunAsync("openModal", "goodsWindow");
+    }
+
+    public void Close()
+    {
+        page.JavaScriptRunAsync("closeModal", "goodsWindow");
+    }
+    public void Ok()
+    {
+
+        if (WorkType == WorkType.轮 && string.IsNullOrEmpty(Gender))
+        {
+            page.Alert("请选择性别","提示");
+            return;
+        }
+
+        if (WorkType != WorkType.轮 && ArtificerId == 0)
+        {
+            page.Alert("请选择技师", "提示");
+            return;
+        }
+
+        var goods = new OrderDetailInfo2()
+            {
+                GoodsCategory = Project.DetailType,
+                GoodsId = Project.GoodsId,
+                Number = 1,
+                ArtificerId = ArtificerId, Gender=Gender, 
+                WorkType=WorkType,
+                AddChannel = "03",
+                Price = Project.Price
+
+            };
+        RoomOrder.OrderDetailList.Add(goods);
+        if (ValChanged.HasDelegate)
+            ValChanged.InvokeAsync(goods);
+        
+
+        Close();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitValue();
+        ArtificerInit();
+        await Task.Yield();
+        base.OnInitialized();
+    }
+
+}

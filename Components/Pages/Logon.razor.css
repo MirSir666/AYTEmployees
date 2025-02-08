@@ -1,0 +1,91 @@
+﻿.content {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    padding: 0px 20px;
+    flex-direction: column;
+    gap: 40px;
+    height: auto;
+}
+.wireframe {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 设置容器的宽高，如果需要 */
+    width: 100vw;
+    height: 100vh;
+    background: -webkit-linear-gradient(90deg,#3dcc9e,#7dc487,#a0bb7e);
+    background: linear-gradient(90deg,#3dcc9e,#7dc487,#a0bb7e);
+}
+.title {
+    font-weight: 400;
+    font-size:48px;
+    color: var(--white);
+}
+
+.tab {
+    width:100%;
+}
+    .tab button {
+        color: var(--white);
+        font-weight: 600;
+    }
+
+    .tab button.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: var(--white);
+    }
+.list {
+    background: none;
+}
+
+.list.no-border .item.border-bottom, .list .item.no-border.border-bottom {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-block-color: var(--white);
+}
+
+.logon {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    gap: 10px;
+    background: rgba(102,102,102,0.2);
+    
+}
+label {
+    color: var(--white);
+}
+input {
+    color: var(--white);
+}
+
+.mobileui-check-input {
+    flex: none;
+    
+}
+
+.rememberMe {
+    align-items: center;
+    display: flex !important;
+}
+
+.check-text {
+    line-height: 30px;
+    flex: 1;
+    margin-left:5px;
+}
+
+:checked {
+   
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5);
+}
+
+

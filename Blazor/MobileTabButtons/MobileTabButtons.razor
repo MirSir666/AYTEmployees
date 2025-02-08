@@ -1,0 +1,80 @@
+﻿<div class=" @ClassName  list">
+    @foreach (var btn in Buttons)
+    {
+        <div class="item @btn.ClassName @ButtonClassName " @onclick=@(()=>{OnClick(btn);})>
+            <h2>@btn.Item.Text</h2>
+        </div>
+      
+    }
+</div>
+
+@typeparam TExample
+@code {
+    [Parameter]
+    public string ClassName { get; set; } = "";
+    [Parameter]
+    public string ButtonClassName { get; set; } = "";
+
+    private List<MobileGroupButtonsItem<TExample>> data;
+    [Parameter]
+    public List<MobileGroupButtonsItem<TExample>> Data
+    {
+        get { return data; }
+        set
+        {
+            data = value ?? new List<MobileGroupButtonsItem<TExample>>();
+            Buttons = data.Select((o, index) => new MobileGroupButton<TExample>() { Item = o, ClassName = GetClassName(index), Index = index }).ToList();
+
+        }
+    }
+    public int Index { get; set; }
+
+    public List<MobileGroupButton<TExample>> Buttons { set; get; } = new List<MobileGroupButton<TExample>>();
+
+    [Parameter]
+    public EventCallback<TExample> OnChanged { get; set; }
+
+    public string GetClassName(int index)
+    {
+        return Index == index ? "active" : "";
+    }
+
+    public void SetFirstSelect()
+    {
+        if (Buttons.Any())
+        {
+            OnClick(Buttons.First());
+            StateHasChanged();
+        }
+
+
+    }
+
+    public void SetSelectVal(TExample val)
+    {
+        var button = Buttons.FirstOrDefault(o => !EqualityComparer<TExample>.Default.Equals(o.Item.Value, val));
+        if (button!=null)
+        {
+            OnClick(button);
+            StateHasChanged();
+        }
+
+    }
+
+    public void OnClick(MobileGroupButton<TExample> button)
+    {
+        var olwIndex = Index;
+        Index = button.Index;
+        if (olwIndex >= Buttons.Count)
+        {
+            olwIndex = Index;
+        }
+
+        Buttons[olwIndex].ClassName = GetClassName(olwIndex);
+        Buttons[button.Index].ClassName = GetClassName(button.Index);
+        if (OnChanged.HasDelegate)
+            OnChanged.InvokeAsync(button.Item.Value);
+    }
+
+
+}

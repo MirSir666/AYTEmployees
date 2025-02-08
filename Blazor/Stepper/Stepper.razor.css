@@ -1,0 +1,66 @@
+﻿.stepper {
+    display:grid;
+    grid-template-columns:repeat(3,auto);
+    text-align:center;
+  
+}
+
+    .stepper .stepper_minus {
+        position: relative;
+        box-sizing: border-box;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: 0;
+        padding: 0;
+        color: #fff;
+        vertical-align: middle;
+        background: var(--blue);
+        border-radius: 50%;
+        border: 0;
+        min-height: auto;
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+    }
+
+    .stepper .stepper_minus:after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        background-color: currentColor;
+        transform: translate(-50%,-50%);
+        content: "";
+    }
+    .stepper .stepper_minus:before {
+        width: 50%;
+        height: 1px;
+    }
+
+
+    .stepper .stepper_input {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 1rem;
+        text-align: center;
+        line-height: 1.5rem;
+    }
+
+    .stepper .stepper_plus {
+        position: relative;
+        box-sizing: border-box;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: 0;
+        padding: 0;
+        color: #fff;
+        vertical-align: middle;
+        background: var(--blue);
+        border-radius: 50%;
+        border: 0;
+        min-height: auto;
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+    }
+
+/*van-stepper__minus van-stepper__minus--disabled*/
+.stepper--round {
+}

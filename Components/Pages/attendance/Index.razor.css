@@ -1,0 +1,77 @@
+﻿.content {
+    display: flex;
+    height: 100vh;
+}
+
+.search {
+    padding: 0px;
+    margin: 0px;
+    font-size: 30px;
+    color: #fff;
+    margin-right: 10px;
+    margin-top: 5px;
+    float: right;
+    z-index: 100;
+}
+
+.body {
+    flex: 1;
+    padding-top: 52px;
+    background: var(--defbac)
+}
+
+.state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem;
+    border: 10px;
+    background: var(--white);
+    height: 14rem;
+    border-radius: 10px;
+}
+
+.ring {
+    width: 10rem;
+    height: 10rem;
+    border-radius: 50%;
+    border: 0.4rem solid;
+    border-color: #51bc88;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+    .ring:hover {
+        box-shadow: rgba(100, 100, 111, 0.2) 2px 2px 10px 5px;
+    }
+
+.r-s-1 {
+    border-color: #808080;
+}
+
+.r-s-1 {
+    border-color: #808080;
+}
+
+.ring_op {
+    font-size:2em;
+}
+.ring_time {
+    display: flex;
+    font-size: 1em;
+}
+
+.itable {
+    background: var(--white);
+    min-height: 180px;
+}
+
+.ring_wancheng {
+    font-size: 2em;
+    display: flex;
+}
+    .ring_wancheng span {
+        font-size: 4em;
+        color: #596A7B;
+    }

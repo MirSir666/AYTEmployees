@@ -1,0 +1,32 @@
+﻿.content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--defbac);
+    gap: 0.5rem;
+    padding-bottom: 72px;
+    padding: 0.5rem;
+    padding-top:2rem;
+}
+
+.username {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+    .username .name {
+        font-size:2rem;
+    }
+    .username .gh {
+        font-size: 1.2rem;
+    }
+
+    .list {
+        background: var(--white);
+    }
+
+
+.it {
+    display: grid;
+    grid-template-columns:auto 1fr auto;
+    gap:.2rem;
+}

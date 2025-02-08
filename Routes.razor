@@ -1,0 +1,44 @@
+﻿@using AYTEmployees.Components.Pages
+
+@if (Visible)
+{
+    <Router AppAssembly="@typeof(MauiProgram).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(Components.Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+    </Router>
+}
+else
+    {
+
+    <Logon OnSuccess="Success"></Logon>
+    }
+
+
+@inject RoutesState routesState
+@code {
+    private bool Visible { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        routesState.OnChange += ChangeVisible;
+    }
+
+    public void Dispose()
+    {
+        routesState.OnChange -= ChangeVisible;
+    }
+
+    public void ChangeVisible()
+    {
+        Visible = routesState.Visible;
+        StateHasChanged();
+    }
+
+    public void Success(int status)
+    {
+        //Visible = true;
+       //this.StateHasChanged
+    }
+}

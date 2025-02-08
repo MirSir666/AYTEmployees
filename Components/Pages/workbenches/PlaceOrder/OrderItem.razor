@@ -1,0 +1,99 @@
+﻿<div class="item ">
+    <div class="googdsName">
+        <span>@OrderDetail.GoodsName</span>
+        @if (OrderDetail.DetailType == "01")
+        {
+            <span class="projectDuration">@(OrderDetail.ProjectDuration)分</span>
+        }
+    </div>
+    <div class="googdsPrice">￥@OrderDetail.PriceF</div>
+    <Stepper @bind-Val=OrderDetail.Num BeforeDecrease="Decrease"  BeforeIncrease="Increase"></Stepper>
+</div>
+
+@layout NullLayout
+@code {
+    [Parameter]
+    public GetGoodsProjecListOutput OrderDetail { get; set; } = new GetGoodsProjecListOutput();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+    [Parameter]
+    public EventCallback<GetGoodsProjecListOutput>PpopProjectWin { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValChanged { get; set; }
+
+    public void NumChanged(int num)
+    {
+        if (ValChanged.HasDelegate)
+            ValChanged.InvokeAsync(num);
+    }
+
+    public void SetNum(int num)
+    {
+        OrderDetail.Num = num;
+        this.StateHasChanged();
+
+    }
+
+    public bool Decrease(int num)
+    {
+        //-
+        if (RoomOrder.OrderDetailList != null && RoomOrder.OrderDetailList.Any())
+        {
+            var goods = RoomOrder.OrderDetailList.FirstOrDefault(o => o.GoodsId == OrderDetail.GoodsId);
+            if (goods != null && goods.GoodsCategory == "01")
+            {
+                RoomOrder.OrderDetailList.Remove(goods);
+                NumChanged(num);
+                return true;
+            }
+
+            if (goods.Number != 0)
+            {
+                goods.Number = goods.Number - 1;
+            }
+        }
+
+        NumChanged(num);
+        return true;
+    }
+    public bool Increase(int num)
+    {
+        //+
+        if (RoomOrder.OrderDetailList == null)
+            RoomOrder.OrderDetailList = new List<OrderDetailInfo2>();
+        var tt = RoomOrder.OrderDetailList;
+        var goods = RoomOrder.OrderDetailList.FirstOrDefault(o => o.GoodsId == OrderDetail.GoodsId);
+
+        if (OrderDetail.DetailType == "01")
+        {
+            PpopProjectWin.InvokeAsync(OrderDetail);
+            return false;
+
+        }
+
+
+        if (goods == null && OrderDetail.DetailType == "00")
+        {
+            goods = new OrderDetailInfo2()
+             {
+                    GoodsCategory = OrderDetail.DetailType,
+                    GoodsId = OrderDetail.GoodsId, 
+                    Number = 0, 
+                    AddChannel="03", 
+                    Price=OrderDetail.Price
+
+            };
+            RoomOrder.OrderDetailList.Add(goods);
+            goods = RoomOrder.OrderDetailList.FirstOrDefault(o => o.GoodsId == OrderDetail.GoodsId);
+        }
+        goods.Number = goods.Number + 1;
+       
+
+        NumChanged(num);
+        return true;
+    }
+}

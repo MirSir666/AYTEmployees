@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>员工端</title>
+    <base href="/" />
+
+    <!--<link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css" />-->
+    <!--<link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css" />-->
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="lui/css/lui.css" />
+
+    <link rel="stylesheet" type="text/css" href="//at.alicdn.com/t/c/font_4376580_whtg409vaph.css" />
+    <link rel="stylesheet" href="mobileui/base/reset.css" />
+    <link rel="stylesheet" href="mobileui/base/mobileui.css" />
+    <link rel="stylesheet" href="mobileui/base/colors.css" />
+    <link rel="stylesheet" href="mobileui/base/icons.css" />
+    <link rel="stylesheet" href="mobileui/button/style.css" />
+    <link rel="stylesheet" href="mobileui/header/style.css" />
+    <link rel="stylesheet" href="mobileui/input/style.css" />
+    <link rel="stylesheet" href="mobileui/list/style.css" />
+    <link rel="stylesheet" href="mobileui/tab/style.css" />
+    <link rel="stylesheet" href="mobileui/menu/style.css" />
+    <link rel="stylesheet" href="mobileui/cover/style.css" />
+    <link rel="stylesheet" href="mobileui/popover/style.css" />
+    <link rel="stylesheet" href="mobileui/alert/style.css" />
+    <link rel="stylesheet" href="mobileui/toast/style.css" />
+    <link rel="stylesheet" href="mobileui/modal/style.css" />
+    <link rel="stylesheet" href="loaders/loaders.min.css" />
+
+    <link rel="stylesheet" href="AYTEmployees.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+
+
+    <div id="app">
+        <div id="loading" style="display: flex; width: 100%; height: 100%; background: #42b983; -ms-flex-direction: column; flex-direction: column; -ms-flex-align: center; align-items: center; -ms-flex-pack: center; justify-content: center;" >
+            <div class="ball-spin-fade-loader" style="transform: scale(1.2);"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            <!--<div class="loadingfont">加载中...</div>-->
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <!--<script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>-->
+    <!--<script src="mobileui/select/select.js"></script>-->
+    <script src="lui/lui.js"></script>
+    <script src="mobileui/base/base.js"></script>
+    <script src="mobileui/button/script.js"></script>
+    <script src="mobileui/input/script.js"></script>
+    <script src="mobileui/tab/script.js"></script>
+    <script src="mobileui/menu/script.js"></script>
+    <script src="mobileui/popover/script.js"></script>
+    <script src="mobileui/alert/script.js"></script>
+    <script src="mobileui/toast/script.js"></script>
+    <script src="mobileui/modal/script.js"></script>
+
+    <script src="chart.min.js"></script>
+
+    <!--<script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>
+        // VConsole will be exported to `window.VConsole` by default.
+        var vConsole = new window.VConsole();
+    </script>-->
+    <style type="text/css">
+
+
+        #loading {
+            
+        }
+            #loading .loadingfont {
+                font-size:2em;
+                color:#fff;
+            }
+        .ball-spin-fade-loader {
+            transform: scale(2);
+        }
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,258 @@
+﻿@page "/achievements"
+<div class="content">
+
+@*     <div class="header blue  shadow tab">
+        <button class="text-white active" >
+            今天
+        </button>
+        <button class="text-white">昨天</button>
+        <button class="text-white">本月</button>
+        <button class="text-white">上月</button>
+
+
+    </div> *@
+    <MobileGroupButtons TExample=AttendanceClocSearchType Data="SelectDataTypeList" OnChanged="SelectDataType"></MobileGroupButtons>
+    <div class="Chart">
+        <canvas id="myChart"></canvas>
+    </div>
+    <div class="jjtc">
+        <div class="ititle">
+            <span >业绩提成 </span>
+            <i class="iconfont icon-right iicon"></i>
+        </div>
+        <div class="itable">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">项目名</th>
+                   @*      <th scope="col">上钟类型</th> *@
+                    @*     <th scope="col">是否加班</th> *@
+                        <th scope="col">提成</th>
+                       
+                        <th scope="col">日期时间</th>
+
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in PromoteDataList)
+                    {
+                        <tr>
+                            <td>
+                                <div class="projectName">
+                                    <div class="fon">  @item.Name</div>
+                                    <span class="imark color2ed573">@item.WorkTypeF</span>
+                                    @if (item.IsOvertimes != null && item.IsOvertimes.Value)
+                                    {
+                                        <span class="imark colorF9F871">加</span>
+                                    }
+                                    
+                                </div>
+                            </td>
+                           @*  <td>@item.WorkTypeF</td> *@
+                            @* <td>@(item.IsOvertimes != null && item.IsOvertimes.Value ? "是" : "否")</td> *@
+                            <td>@item.Income?.ToString("#0.00")</td>
+                            @switch (ClocSearch)
+                            {
+                                case AttendanceClocSearchType.今天:
+                                case AttendanceClocSearchType.昨天:
+                                    <td>@item.CreateTime.Value.ToString("HH:mm")</td>
+                                    break;
+                                case AttendanceClocSearchType.本月:
+                                case AttendanceClocSearchType.上月:
+                                    <td>@item.CreateTime.Value.ToString("MM-dd HH:mm")</td>
+                                    break;
+
+                            }
+
+                           
+                           
+                        </tr>
+                    }   
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="xstc">
+        <div class="ititle">
+            <span>销售提成 </span>
+            <i class="iconfont icon-right iicon"></i>
+        </div>
+        <div class="itable">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">名称</th>
+                        <th scope="col">类型</th>
+                    @*     <th scope="col">数量</th> *@
+                        <th scope="col">提成</th>
+                        <th scope="col">日期时间</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CommissionDataList)
+                    {
+                        <tr>
+                            <td>@item.Name * @item.Number?.ToString("#0")</td>
+                            <td>@item.BusTypeF</td>
+                            @* <td>@item.Number</td> *@
+                            <td>@item.Income?.ToString("#0.00")</td>
+                            @switch (ClocSearch)
+                            {
+                                case AttendanceClocSearchType.今天:
+                                case AttendanceClocSearchType.昨天:
+                                    <td>@item.CreateTime.Value.ToString("HH:mm")</td>
+                                    break;
+                                case AttendanceClocSearchType.本月:
+                                case AttendanceClocSearchType.上月:
+                                    <td>@item.CreateTime.Value.ToString("MM-dd HH:mm")</td>
+                                    break;
+
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+  
+</div>
+
+<script>
+    var ctx = document.getElementById('myChart');
+
+    var chart= new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '业绩提成',
+                data: [],
+                fill: false,
+                borderColor: 'rgb(151,226,160)',
+            },
+            {
+                label: '销售提成',
+                data: [],
+                fill: false,
+                borderColor: 'rgb(202,161,213)',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: '业绩销售统计'
+                }
+            }
+        }
+    });
+
+    function newLineChart(labels, promoteData, commissionData) {
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = promoteData;
+        chart.data.datasets[1].data = commissionData;
+        chart.update();
+        // var ctx = document.getElementById('myChart');
+
+        // new Chart(ctx, {
+        //     type: 'line',
+        //     data: {
+        //         labels: labels,
+        //         datasets: [{
+        //             label: '业绩提成',
+        //             data: promoteData,
+        //             fill: false,
+        //             borderColor: 'rgb(151,226,160)',
+        //         },
+        //         {
+        //             label: '销售提成',
+        //             data: commissionData,
+        //             fill: false,
+        //             borderColor: 'rgb(202,161,213)',
+        //         }]
+        //     },
+        //     options: {
+        //         scales: {
+        //             y: {
+        //                 beginAtZero: true
+        //             }
+        //         }
+        //     }
+        // });
+    }
+</script>
+@inject IAchievementsService achievementsService;
+@inject IBasePage page;
+@inject UI ui;
+@code {
+    //public  PromoteStatisticsSearch  PromoteStatisticsSearch { get; set; } = new PromoteStatisticsSearch() { Type = 1 };
+
+    public AttendanceClocSearchType ClocSearch { get; set; } = AttendanceClocSearchType.今天;
+
+    public List<MobileGroupButtonsItem<AttendanceClocSearchType>> SelectDataTypeList { get; set; } = new List<MobileGroupButtonsItem<AttendanceClocSearchType>>()
+    {
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.今天,Text=nameof(AttendanceClocSearchType.今天) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.昨天,Text=nameof(AttendanceClocSearchType.昨天) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.本月,Text=nameof(AttendanceClocSearchType.本月) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.上月,Text=nameof(AttendanceClocSearchType.上月) },
+    };
+
+    public List<GetPromoteDataOutput> PromoteDataList { get; set; } = new List<GetPromoteDataOutput>();
+
+    public List<GetCommissionDataOutput> CommissionDataList { get; set; } = new List<GetCommissionDataOutput>();
+
+
+    public void SelectDataType(AttendanceClocSearchType type)
+    {
+        ClocSearch = type;
+        InitQuery();
+    }
+
+    public async void InitQuery()
+    {
+        try
+        {
+            var search = new PromoteStatisticsSearch() { Type = (int)ClocSearch };
+            var lineData = await achievementsService.GetLineChartData(search);
+            if (!lineData.IsSuccess)
+                page.Alert(lineData.Message, "网络错误");
+
+            page.UIJavaScriptRunAsync("newLineChart", lineData.Data.Lables, lineData.Data.PromoteData, lineData.Data.CommissionData);
+
+            var pdata = await achievementsService.GetPromoteData(search);
+            if (!pdata.IsSuccess)
+                page.Alert(pdata.Message, "网络错误");
+
+            PromoteDataList = pdata.Data;
+
+            var cdata = await achievementsService.GetCommissionData(search);
+            if (!cdata.IsSuccess)
+                page.Alert(cdata.Message, "网络错误");
+
+            CommissionDataList = cdata.Data;
+
+            StateHasChanged();
+
+        }
+        catch (Exception ex)
+        {
+            page.Alert(ex.Message, "网络错误");
+            Debug.WriteLine(ex.Message);
+        }
+
+    }
+    //public string activeClass
+
+    protected override void OnInitialized()
+    {
+        InitQuery();
+    }
+}

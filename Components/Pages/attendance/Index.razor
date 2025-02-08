@@ -1,0 +1,236 @@
+﻿@page "/attendance"
+@using AYTEmployees.WifiTool
+@layout NullLayout
+<div class="content">
+    <div class="header blue ">
+        <button class="left icon ion-android-arrow-back" onclick="history.back();" name="button"></button>
+        <h1 class="align-center">我的考勤</h1>
+        <button class ="icon-icon-test iconfont search " ></button>
+    </div>
+    <div class="body">
+        <div class="state">
+            <div class="ring @RingClass" @onclick=ClockInOrOut >
+                @if (AttendanceStatus.IsComplete)
+                {
+                    <div class="ring_wancheng"><span class="icon-wancheng1 iconfont"></span></div>
+                   
+                }else
+                {
+                    <div class="ring_op">@AttendanceStatus.CheckworksTypeF</div>
+                    <div class="ring_time">
+                        <div>@DateNow</div>
+                        <div>@AttendanceStatus.AttendanceTypeF</div>
+                    </div>
+                }
+
+            </div>
+        </div>
+        <div class="data">
+         @*    OnChanged="SelectDataType" *@
+            <MobileGroupButtons TExample=AttendanceClocSearchType Data="SelectDataTypeList" OnChanged="SelectDataType" ></MobileGroupButtons>
+           @*  <div class=" blue  shadow tab">
+                <button class="text-white active"  >
+                    今天
+                </button>
+                <button class="text-white" >昨天</button>
+                <button class="text-white">本月</button>
+                <button class="text-white">上月</button>
+            </div> *@
+            <div class="itable">
+                <table class="table table-bordered table-hover">
+                    <thead >
+                        <tr>
+                            <th scope="col" >日期</th>
+                            <th scope="col">类型</th>
+                            <th scope="col">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in AttendanceList)
+                        {
+                            <tr>
+                                <td>@item.DateF</td>
+                                <td>@item.AttendanceTypeF @(item.CheckworksType != 1 ? item.CheckworksTypeF:"")</td>
+                                <td>@item.ClockTimeF</td>
+                            </tr>
+                        }
+                       
+                      
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@inject IAttendanceService attendanceService
+@inject IJSRuntime JSRuntime
+@inject IBasePage page;
+@inject UI ui;
+@implements IAsyncDisposable;
+@code {
+    private IDispatcherTimer timer;
+    public GetAttendanceStatusOutput AttendanceStatus { get; set; } = new GetAttendanceStatusOutput();
+
+    public AttendanceClocSearchType AttendanceClocSearch { get; set; } = AttendanceClocSearchType.今天;
+    public List<AttendanceClockRecordsOutput> AttendanceList { get; set; } = new List<AttendanceClockRecordsOutput>();
+
+    public List<MobileGroupButtonsItem<AttendanceClocSearchType>> SelectDataTypeList { get; set; } = new List<MobileGroupButtonsItem<AttendanceClocSearchType>>()
+    {
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.今天,Text=nameof(AttendanceClocSearchType.今天) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.昨天,Text=nameof(AttendanceClocSearchType.昨天) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.本月,Text=nameof(AttendanceClocSearchType.本月) },
+        new MobileGroupButtonsItem<AttendanceClocSearchType>(){ Value=AttendanceClocSearchType.上月,Text=nameof(AttendanceClocSearchType.上月) },
+    };
+
+    public string RingClass { get; set; }
+
+    public string DateNow { get; set; }
+
+
+
+    public void TimerTick(object? sender, EventArgs e)
+    {
+
+        if ( timer != null)
+        {
+            DateNow = DateTime.Now.ToString("HH:mm:ss");
+            this.StateHasChanged();
+        }
+    }
+    public void ClockInOrOut()
+    {
+
+        if (AttendanceStatus.IsComplete)
+        {
+            page.Alert("无需打卡", "提示");
+            return;
+        }
+
+        ui.Working(async () =>
+         {
+             var response = await WifiTool.Current.GetNetworkInfo();
+             //var response = await CrossWifiManager.Current.OpenWifiSetting();
+             Location location = await page.GetCurrentLocation();
+             var input = new AttendanceClockRecordsInput() { Latitude = location?.Latitude, Longitude = location?.Longitude, MACAddress = response?.Bssid };
+
+
+             if (AttendanceStatus.AttendanceType == AttendanceType.上班)
+             {
+                 var ret = await attendanceService.ClockIn(input);
+                 if (!ret.IsSuccess)
+                 {
+                     page.Alert(ret.Message, "提示");
+                 }
+
+             } else
+             {
+                 var ret = await attendanceService.ClockOut(input);
+                 if (!ret.IsSuccess)
+                 {
+                     page.Alert(ret.Message, "提示");
+                 }
+
+             }
+
+            
+             StateHasChanged();
+             InitQuery();
+             InitData();
+
+         });
+        
+    }
+
+    public void TimeStart()
+    {
+
+        timer = Application.Current.Dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += TimerTick;
+        timer.Start();
+    }
+
+    public void TimeStop()
+    {
+
+        if (timer != null)
+        {
+            timer.Tick -= TimerTick;
+            timer.Stop();
+            timer = null;
+
+        }
+    }
+
+    public void SelectDataType(AttendanceClocSearchType type)
+    {
+        AttendanceClocSearch = type;
+        InitQuery();
+    }
+    public void InitQuery()
+    {
+        ui.Working(async () =>
+          {
+
+              var ret = await attendanceService.GetAttendanceClockRecords(new AttendanceClockRecordsSearch() { AttendanceClocSearch = AttendanceClocSearch });
+              if (!ret.IsSuccess)
+              {
+                  page.Alert(ret.Message, "提示");
+              }
+              AttendanceList = ret.Data??new List<AttendanceClockRecordsOutput>();
+              StateHasChanged();
+
+          });
+    }
+
+    public void InitData()
+    {
+        ui.Working(async () =>
+        {
+            var response = await WifiTool.Current.GetNetworkInfo();
+            //var response = await CrossWifiManager.Current.OpenWifiSetting();
+            Location location = await page.GetCurrentLocation();
+            var ret = await attendanceService.GetAttendanceStatus(new AttendanceClockRecordsInput() { Latitude = location?.Latitude, Longitude = location?.Longitude, MACAddress = response?.Bssid });
+            if (!ret.IsSuccess)
+            {
+                page.Alert(ret.Message, "提示");
+            }
+            AttendanceStatus = ret.Data;
+            StateHasChanged();
+
+        });
+
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitData();
+        InitQuery();
+        TimeStart();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        TimeStop();
+    }
+}
+
+
+
+                        @* <script>
+    var gengxing = ba => {
+
+        alert("123123" + ba);
+    }
+
+        // [Parameter]
+    // public int MyProperty { get; set; } = 0;
+    // public void gggg()
+    // {
+    //     MyProperty++;
+    //     JSRuntime.InvokeVoidAsync("gengxing",MyProperty);
+    // }
+</script> *@

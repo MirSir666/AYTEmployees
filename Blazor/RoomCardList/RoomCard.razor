@@ -1,0 +1,58 @@
+﻿<div class="icard @GetICardClass()" @onclick=@(async()=>await OnRoomCardClick.InvokeAsync(RoomStatus))>
+    <div class="card_up">
+        <div class="room_no" >@RoomStatus.RoomNum</div>
+      
+            @if (RoomStatus.SortNo != 0)
+            {
+            <div class="unite"> 联房@(RoomStatus.RoomNum)</div>
+        }
+
+        @*   @if (RoomStatus.Status==4||)
+        {
+            <div class="renshu">@(RoomStatus.BedList?.Count ?? 0)/@RoomStatus.BedNum</div>
+        } *@
+
+    </div>
+    <div class="card_middle"></div>
+
+    <div class="card_down">
+@*         @(Status1.Contains(RoomStatus.Status) ? "￥"+RoomStatus.TotalPriceF:"") *@
+    </div>
+</div>
+
+@code {
+
+    List<int> Status1 = new List<int>() {2,4,5 };
+
+    [Parameter]
+    public RoomStatusItem RoomStatus { get; set; }
+
+    [Parameter]
+    public EventCallback<RoomStatusItem> OnRoomCardClick { get; set; }
+
+    public string GetICardClass()
+    {
+        switch (RoomStatus.Status)
+        {
+            case 1: //空=1
+                return "";
+            case 2: // 进=2
+                return "r_jin";
+            case 3: // 预=3
+                return "r_yu";
+            case 4: //钟=4
+                return "r_zhong";
+            case 5: //账=5
+                return "r_zhang";
+            case 6: // 休=6
+                return "r_xiuxi";
+            case 7: // 清=7
+                return "r_qing";
+            case 8: // 修=8
+                return "r_xiuli";
+            default:
+                return "";
+        }
+        
+    }
+}

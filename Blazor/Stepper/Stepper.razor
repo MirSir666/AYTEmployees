@@ -1,0 +1,50 @@
+﻿<div class="stepper @ClassName">
+    <button class="stepper_minus btn btn-outline-dark " @onclick=Decrease>—</button>
+    <label class="stepper_input">@Val</label>
+    <button class="stepper_plus btn btn-outline-dark " @onclick=Increase>+</button>
+</div>
+
+@code {
+    //disabled
+    public int MinVal { get; set; } = 0;
+    public int MaxVal { get; set; } = int.MaxValue;
+    [Parameter]
+    public int Val { get; set; } 
+
+    public string ClassName { get; set; }
+    public void Increase()
+    {
+        if (MaxVal==Val)
+            return;
+        if (BeforeIncrease != null && !BeforeIncrease(Val)) return;
+        Val++;
+       
+        if (ValChanged.HasDelegate) ValChanged.InvokeAsync(Val);
+
+    }
+
+    [Parameter]
+    public EventCallback<int> ValChanged { get; set; }
+
+
+
+    [Parameter]
+    public Func<int,bool> BeforeDecrease { get; set; }
+
+    [Parameter]
+    public Func<int, bool> BeforeIncrease { get; set; }
+
+    //Increase
+
+    public void Decrease()
+    {
+        if (MinVal == Val)
+            return;
+
+        if (BeforeDecrease != null && !BeforeDecrease(Val)) return;
+        
+        Val--;
+    
+        if (ValChanged.HasDelegate) ValChanged.InvokeAsync(Val);
+    }
+}

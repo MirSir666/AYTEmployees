@@ -1,0 +1,42 @@
+﻿<div class="content">
+    <div class="header blue ">
+        <button class="left icon ion-android-arrow-back" onclick="history.back();" name="button"></button>
+        <h1 class="align-center">选择房间</h1>
+    </div>
+    <div class="body">
+        <div class="mainbody">
+            <RoomCardList RoomStatusList=@RoomStatusList OnRoomCardClick="roomCard"></RoomCardList>
+        </div>
+    </div>
+</div>
+
+
+
+@page "/selectRoom"
+@layout NullLayout
+@inject IBasePage page;
+@inject IWorkbenchesService workbenchesService
+@code {
+    public List<RoomStatusItem> RoomStatusList { get; set; } = new List<RoomStatusItem>();
+
+    public void roomCard(RoomStatusItem item)
+    {
+        var ee = item;
+
+        page.Goto($"/roomOrder/{item.RoomId}");
+
+    }
+    public async void InitData()
+    {
+        var search = new GetRoomStatusListSearch() { };
+        RoomStatusList = await workbenchesService.GetRoomStatusList(search);
+
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        InitData();
+
+    }
+}

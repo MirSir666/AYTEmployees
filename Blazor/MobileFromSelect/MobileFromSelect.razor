@@ -1,0 +1,111 @@
+﻿<div class="mobileFromSelect">
+    @foreach (var btn in Buttons)
+    {
+        <button class="@btn.ClassName" @onclick=@(()=>OnClick(btn))>@btn.Item.Text</button>
+    }
+
+</div>
+@typeparam TExample
+@code {
+
+
+    private List<MobileFromSelectItem<TExample>> data;
+    [Parameter]
+    public List<MobileFromSelectItem<TExample>> Data
+    {
+        get { return data; }
+        set { 
+            data = value??new List<MobileFromSelectItem<TExample>>();
+            Buttons = data.Select((o, index) => new MobileFromSelectButton<TExample>() { Item = o, ClassName = GetClassName(index), Index = index }).ToList();
+        }
+    }
+    [Parameter]
+    public string DefaultClass { get; set; } = "border-green text-green";
+    [Parameter]
+    public string SelectClass { get; set; } = "green";
+
+    public List<MobileFromSelectButton<TExample>> Buttons { set; get; } = new List<MobileFromSelectButton<TExample>>();
+
+    [Parameter]
+    public bool IsSelectAll { get; set; }
+
+ 
+    public List<TExample> SelectedValue { get; set; } = new List<TExample>();
+
+    public List<int> SelectedIndexList { get; set; } = new List<int>();
+
+
+    [Parameter]
+    public EventCallback<TExample[]> OnChanged { get; set; }
+
+    /// <summary>
+    /// 全选
+    /// </summary>
+    public void SelectAll()
+    {
+      
+        SelectedIndexList = Buttons.Select((o, index) => index).ToList();
+        SelectedValue = Buttons.Select(o=>o.Item.Value).ToList();
+        Buttons.ForEach(o =>
+       {
+           o.ClassName = SelectedValue.Contains(o.Item.Value) ? SelectClass : DefaultClass;
+       });
+        StateHasChanged();
+        if (OnChanged.HasDelegate)
+            OnChanged.InvokeAsync(SelectedValue.ToArray());
+
+    }
+    /// <summary>
+    /// 全不选
+    /// </summary>
+    public void DeselectAll()
+    {
+        SelectedIndexList =new List<int>();
+        SelectedValue = new List<TExample>() ;
+        Buttons.ForEach(o =>
+       {
+           o.ClassName = SelectedValue.Contains(o.Item.Value) ? SelectClass : DefaultClass;
+       });
+        StateHasChanged();
+        if (OnChanged.HasDelegate)
+            OnChanged.InvokeAsync(SelectedValue.ToArray());
+  
+    }
+
+    public void SetSelectedValue(List<TExample>  vals)
+    {
+        SelectedValue = vals;
+
+        Buttons.ForEach(o =>
+        {
+            o.ClassName = SelectedValue.Contains(o.Item.Value) ? SelectClass : DefaultClass;
+        });
+
+    }
+
+
+    public string GetClassName(int index)
+    {
+        return SelectedIndexList.Any(o =>o==index ) ? SelectClass : DefaultClass;
+    }
+
+    public void OnClick(MobileFromSelectButton<TExample> button)
+    {
+        var val = button.Item.Value;
+        if (SelectedIndexList.Any(o => o == button.Index))
+        {
+            SelectedValue = SelectedValue.Where(o => !EqualityComparer<TExample>.Default.Equals(o, val)).ToList();
+            SelectedIndexList = SelectedIndexList.Where(o => o != button.Index).ToList();
+        }
+        else
+        {
+            SelectedValue.Add(val);
+            SelectedIndexList.Add(button.Index);
+        }
+
+        Buttons[button.Index].ClassName = GetClassName(button.Index);
+        if (OnChanged.HasDelegate)
+            OnChanged.InvokeAsync(SelectedValue.ToArray());
+        
+    }
+}

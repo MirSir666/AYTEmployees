@@ -1,0 +1,6 @@
+﻿.list {
+    font-size:1em;
+}
+.list .active {
+    background: #fff;
+}

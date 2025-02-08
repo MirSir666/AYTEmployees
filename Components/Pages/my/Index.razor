@@ -1,0 +1,119 @@
+﻿@page "/my"
+<div class="content">
+    <div class="username">
+        <span class="name">@User.ArtificerName</span>
+        <span class="gh">工号:@User.JobNumber</span>
+    </div>
+    <div class="list">
+
+        <div class="item">
+            <div class="it" @onclick=@(()=>basePage.Goto("/my/UpdatePassword")) >
+                <i class="icon-xiugaimima iconfont"></i>
+                <span>重置密码</span>
+                <i class=" icon-right iconfont"></i>
+            </div>
+        </div>
+        <div class="item">
+            <div class="it">
+                <i class="icon-icon_store iconfont"></i>
+                <span>当前门店</span>
+                <span>@StoreName</span>
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="it">
+                <i class="icon-shezhi iconfont"></i>
+                <span>系统设置</span>
+                <i class=" icon-right iconfont"></i>
+            </div>
+        </div>
+
+        <div class="item">
+
+            <div class="it">
+                <i class="icon-fankuijianyi iconfont"></i>
+                <span>反馈建议</span>
+                <i class=" icon-right iconfont"></i>
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="it">
+                <i class="icon-ziyuan iconfont"></i>
+                <span>当前版本</span>
+                <span>1.0001</span>
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="it" @onclick=guanji>
+                <i class="icon-guanji iconfont"></i>
+                <span>退出登录</span>
+                <i class=" icon-right iconfont"></i>
+            </div>
+            
+        </div>
+    </div>
+</div>
+@inject IBasePage basePage;
+@inject IMyService myService
+@inject HubConnection hubConnection
+@inject UI ui;
+
+@code {
+    public GetTechnicianInfoOutput User { get; set; } = new GetTechnicianInfoOutput();
+
+    public string StoreName { get; set; }
+
+    public async void guanji()
+    {
+        var ret = await myService.Logout();
+
+
+        //是否连接
+        if (hubConnection?.State == HubConnectionState.Connected)
+        {
+            try
+            {
+                await hubConnection.StopAsync();
+                await hubConnection.DisposeAsync();
+            }
+            catch { }
+        }
+     
+        basePage.Logout();
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ui.Working(Task.Run(async()=>
+        {
+                var cuser = Settings.GetObj<AytCurrentUser>(UserConst.CurrentUser);
+                StoreName = cuser.CurrentStore.Name;
+                var info = await myService.GetTechnicianInfo();
+                if (info.IsSuccess)
+                {
+                    User = info.Data;
+                }
+        }));
+        // try
+        // {
+        //     var cuser = Settings.GetObj<AytCurrentUser>(UserConst.CurrentUser);
+        //     StoreName = cuser.CurrentStore.Name;
+        //     var info = await myService.GetTechnicianInfo();
+        //     if (info.IsSuccess)
+        //     {
+        //         User = info.Data;
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     basePage.Alert(ex.Message, "网络错误");
+        //     //throw;
+        // }
+      
+
+    }
+    //GetTechnicianInfo
+}

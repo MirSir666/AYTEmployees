@@ -1,0 +1,232 @@
+﻿@page "/roomOrder/{RoomId:long}"
+<div class="content ">
+    <div class="header blue ">
+        <button class="left icon ion-android-arrow-back" onclick="history.back();" name="button"></button>
+        <h1 class="align-center">房间下单</h1>
+    </div>
+
+    <MobileGroupButtons TExample=string ClassName="header blue sub shadow tab" Data="SelectDataTypeList" OnChanged="ChangeDataType"></MobileGroupButtons>
+    <div class="slidePage">
+        <MobileTabButtons @ref="GoodsTypeRef" TExample=string Data="GoodsTypeList" OnChanged="ChangeGoodsType"></MobileTabButtons>
+    </div>
+    <div class="body">
+        <div class="mainbody">
+            
+            <div class="list">
+
+                @foreach (var gp in GoodsProjecList)
+                {
+                    <OrderItem PpopProjectWin="FulfilPpopProjectWin"  ValChanged="UpdateVal" OrderDetail="gp"></OrderItem>
+                }
+
+            </div>
+
+       
+
+
+        </div>
+    </div>
+    <div class="shoppingCart  shadow  bottom">
+        <div class="sleft ">
+            <button class="circle blue "><i class="iconfont icon-gouwuchekong"></i></button>
+            
+            <span class="money">￥@TotalMoney</span>
+            <span class="number">
+                <MobileInputSelect Placeholder="请选择推销人" OnSuccess=ChangeValue Data=ArtificerData TitleText="选择推销人" @ref=SelectArtificerRef>
+
+
+                </MobileInputSelect>
+            </span>
+        </div>
+        <div class="sright">
+            <button class="blue " @onclick=Ok>确认</button>
+        </div>
+    </div>
+
+   
+</div>
+<SelectProjectWindow @ref=SelectProjectWindowRef ValChanged="UpdateProjectVal"></SelectProjectWindow>
+
+
+@inject IWorkbenchesService service
+@inject IBasePage page;
+@inject UI ui;
+@layout NullLayout
+@code {
+    public List<MobileGroupButtonsItem<string>> SelectDataTypeList { get; set; } = new List<MobileGroupButtonsItem<string>>()
+    {
+        new MobileGroupButtonsItem<string>(){ Text="商品",Value="00" },
+        new MobileGroupButtonsItem<string>(){ Text="项目",Value="01" },
+    }; 
+
+    public List<GetGoodsProjecListOutput> GoodsProjecList { get; set; } = new List<GetGoodsProjecListOutput>();
+
+    public int No { get; set; }
+
+
+    [Parameter]
+    public long RoomId { get; set; }
+
+    public static List<OrderDetailInfo2> OrderDetailList { get; set; } = new List<OrderDetailInfo2>();
+
+    public static SaleInfo? SaleInfo { get; set; } = new SaleInfo();
+
+
+    public string SelectGoodsType { get; set; }
+    public string DataType { get; set; } = "00";
+
+    public string TotalMoney { get; set; } = "0";
+
+    public List<MobileGroupButtonsItem<string>> GoodsTypeList { get; set; } = new List<MobileGroupButtonsItem<string>>();
+
+    MobileTabButtons<string> GoodsTypeRef;
+
+    SelectProjectWindow SelectProjectWindowRef;
+
+    public List<MobileSelectItem> ArtificerData { get; set; } = new List<MobileSelectItem>();
+
+
+    /// <summary>
+    /// 技师id
+    /// </summary>
+    public long ArtificerId { get; set; } = 0;
+    MobileInputSelect SelectArtificerRef;
+
+    public void ChangeValue(object id)
+    {
+        if (id != null)
+        {
+            ArtificerId = Convert.ToInt64(id);
+            SaleInfo.SaleUserId = Convert.ToString(id);
+            SaleInfo.SaleUserName = ArtificerData.FirstOrDefault(o => o.Value == id)?.Label;
+        }
+    }
+
+    public async void ChangeGoodsType(string type)
+    {
+        SelectGoodsType = type;
+        await InitGoodsList();
+        this.StateHasChanged();
+    }
+
+    public async void ChangeDataType(string type)
+    {
+        DataType = type;
+        await InitGoodsType();
+        GoodsTypeRef.SetFirstSelect();
+
+    }
+    public void UpdateProjectVal(OrderDetailInfo2 orderDetailInfo)
+    {
+        var project = GoodsProjecList.FirstOrDefault(o=>o.GoodsId==orderDetailInfo.GoodsId);
+        if (project!=null)
+        {
+            project.Num = project.Num + 1;
+        }
+
+        UpdateVal(0);
+        this.StateHasChanged();
+    }
+
+    public void UpdateVal(int num)
+    {
+        var price = OrderDetailList.Select(o => o.Number * o.Price).Sum()/100;
+        TotalMoney = price==null?"0": Convert.ToString(price);
+
+    }
+
+    public void FulfilPpopProjectWin(GetGoodsProjecListOutput output)
+    {
+        SelectProjectWindowRef.Open(output);
+
+    }
+
+    public async void ArtificerInit()
+    {
+        var list = await service.GetCurrentTechnicianList(new CurrentTechnicianListSearch() {  });
+        ArtificerData = list.Select(o => new MobileSelectItem() { Label = o.ArtificerName, Value = o.ArtificerId }).ToList();
+    }
+
+    public async Task InitGoodsList()
+    {
+        try
+        {
+            GoodsProjecList = await service.GetGoodsProjecList(new GetProjectListSearch() { DetailType = DataType, ProjectTypeId = Convert.ToInt64(SelectGoodsType) });
+            GoodsProjecList.ForEach(o=>
+            {
+                if (o.DetailType == "00")
+                {
+                    o.Num = OrderDetailList.FirstOrDefault(m => m.GoodsId == o.GoodsId)?.Number ?? 0;
+                }
+                else
+                {
+                    o.Num = OrderDetailList.Count(m => m.GoodsId == o.GoodsId);
+                }
+            });
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            page.Alert(ex.Message, "网络错误");
+            Debug.WriteLine(ex.Message);
+            //throw;
+        }
+
+
+    }
+    public async Task InitGoodsType()
+    {
+        try
+        {
+            var goodsType = await service.GetGoodsTypeList(new GetGoodsTypeListSearch() { Type = DataType });
+            GoodsTypeList = goodsType.Select(o=>new MobileGroupButtonsItem<string>() { Text=o.Name, Value=o.Key }).ToList();
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            page.Alert(ex.Message, "网络错误");
+            Debug.WriteLine(ex.Message);
+            //throw;
+        }
+
+
+    }
+
+    public async void Ok()
+    {
+        var ret = await service.PlaceOrder(new PlaceOrderInput()
+            {
+                OrderDetails = OrderDetailList,
+                RoomId = RoomId,
+                SaleInfo = SaleInfo
+            });
+
+        if (!ret.IsSuccess)
+        {
+            page.Alert(ret.Message);
+            return;
+        }
+
+        OrderDetailList  = new List<OrderDetailInfo2>();
+        SaleInfo = new SaleInfo();
+        page.Home();
+
+    }
+    public  async Task Init()
+    {
+        await InitGoodsType();
+        await InitGoodsList();
+         ArtificerInit();
+        this.StateHasChanged();
+
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Init();
+        await Task.Yield();
+        base.OnInitialized();
+    }
+
+}

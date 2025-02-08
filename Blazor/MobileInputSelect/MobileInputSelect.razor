@@ -1,0 +1,211 @@
+﻿
+
+<div class="inputSelect" @onclick=OnClick @onclick:stopPropagation>
+    <span>@CurrentLable</span>
+
+    <span class="inputplaceholder  @IsInputplaceHide()">@Placeholder</span>
+
+
+</div>
+<div class="ms-mobile-select @classNames()">
+    <div class="ms-gray-layer"></div>
+    <div class="ms-content">
+        <div class="ms-btn-bar">
+            <div class="ms-fix-width">
+                <div class="ms-cancel" @onclick=Hide>@CanceText</div>
+                <div class="ms-title">@TitleText</div>
+                <div class="ms-ensure" @onclick=Ok>@EnsureText</div>
+            </div>
+        </div>
+        @* @ontouchend *@
+        @*         <div class="ms-panel" @ontouchstart=OnTouchstart @onmousedown=OnMousemove @onmousemove=OnMousemove @onmouseup=OnMousemove @onmouseleave=OnMousemove> *@
+        <div class="ms-panel">
+            <div class="ms-fix-width">
+                <div class="ms-wheels">
+                    <div class="ms-wheel" data-index="0" style="width: 100%;overflow: auto;">
+                        <ul class="ms-select-container" style="transform: translate3d(0px, 0px, 0px); transition: transform 0.18s ease-out 0s;">
+                            @foreach (var item in Data)
+                            {
+                                <li class="li-item @(CurrentValue==item.Value ? "onli" : "")" @onclick=@(()=>SelectItem(item))>
+                                    @item.Label
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                @*     <div  class="ms-select-line"></div>
+                <div class="ms-shadow-mask"></div> *@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+
+    [Parameter]
+    public string Placeholder { get; set; }
+
+    public string IsInputplaceHide()
+    {
+        return !string.IsNullOrEmpty(CurrentLable) ? "hide" : "";
+    }
+
+
+
+    public string CurrentLable { get; set; } = null;
+    //"mousedown", "mousemove", "mouseup"]
+    // ["touchstart", "touchend", "touchmove"]
+    [Parameter]
+    public string CanceText { get; set; } = "取消";
+    [Parameter]
+    public EventCallback<string> CanceTextChanged { get; set; }
+    [Parameter]
+    public string TitleText { get; set; } = "";
+    [Parameter]
+    public EventCallback<string> TitleTextChanged { get; set; }
+
+    [Parameter]
+    public string EnsureText { get; set; } = "确认";
+    [Parameter]
+    public EventCallback<string> EnsureTextChanged { get; set; }
+
+
+    [Parameter]
+    public object CurrentValue { get; set; } = null;
+
+    [Parameter]
+    public EventCallback<object> CurrentValueChanged { get; set; }
+    // [Parameter]
+    // public List<MobileSelectItem> Data { get; set; } = new List<MobileSelectItem>();
+
+    // [Parameter]
+    // public EventCallback<List<MobileSelectItem>> DataChanged { get; set; }
+
+
+    [Parameter]
+    public List<MobileSelectItem> Data { get; set; } = new List<MobileSelectItem>();
+
+
+
+
+
+    //public List<HtmlWrapper<MobileSelectItem>> Items { get; set; }
+
+    // private List<HtmlWrapper<MobileSelectItem>> items;
+
+    // public List<HtmlWrapper<MobileSelectItem>> Items
+    // {
+    //     get {
+    //         return Data.Select(o=>new HtmlWrapper<MobileSelectItem>() { Item=o, }).toli;
+    //     }
+    //     set { items = value; }
+    // }
+
+
+    public MobileSelectItem CurrentItem { get; set; }
+    public bool IsHide { get; set; } = true;
+
+
+
+
+
+    [Parameter]
+    public EventCallback<object> OnSuccess { get; set; }
+
+    public void SetCurrentValue(object val)
+    {
+        CurrentValue = val;
+        OnParametersSet();
+        StateHasChanged();
+    }
+
+    // public void SetCanceText(string text)
+    // {
+    //     CanceText = text;
+    //     StateHasChanged();
+    // }
+
+    public void Ok()
+    {
+        Hide();
+        this.CurrentLable = CurrentItem.Label;
+        StateHasChanged();
+        if (OnSuccess.HasDelegate)
+        {
+            OnSuccess.InvokeAsync(CurrentValue);
+        }
+        //IsPlaceholder = true;
+        //CurrentValue=;
+
+        // TranslateIndex ++;
+
+        //Debug.WriteLine($"{TranslateIndex}");
+
+    }
+
+
+    public void Hide() => IsHide = true;
+    public void Show()
+    {
+        IsHide = false;
+    }
+
+
+    // public string LiClass(MobileSelectItem item)
+    // {
+    //     return item.Value == CurrentValue ? "onli" : "";
+    // }
+
+    public void SelectItem(MobileSelectItem item)
+    {
+        CurrentItem = item;
+        CurrentLable = item.Label;
+        CurrentValue = item.Value;
+    }
+
+    public void SelectData(List<MobileSelectItem> list)
+    {
+        Data = list;
+        this.OnParametersSet();
+        StateHasChanged();
+    }
+
+    public bool IsMouseDown { get; set; } = false;
+    public double ClientY { get; set; } = 0;
+
+
+    protected override void OnParametersSet()
+    {
+
+
+        base.OnParametersSet();
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        // MaxTranslateIndexVal = Data.Count * 40;
+        // if (MaxTranslateIndexVal > 0)
+        // {
+        //     MaxTranslateIndexVal = MaxTranslateIndexVal - 40;
+        // }
+
+    }
+
+
+
+    public string classNames()
+    {
+        return IsHide ? "" : "ms-show";
+    }
+
+    public void OnClick()
+    {
+        Show();   
+    }
+
+
+}

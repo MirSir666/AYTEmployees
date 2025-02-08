@@ -1,0 +1,75 @@
+﻿.content {
+    display: grid;
+    grid-template-columns:80px 1fr;
+    height: 100vh;
+}
+
+.body {
+    flex: 1;
+    padding-top: 104px;
+    padding-bottom: 65px;
+    overflow-y:auto;
+    background: var(--defbac)
+}
+
+.mainbody {
+    display: flex;
+    gap: 5px;
+    padding-top: 5px;
+    padding-left:5px;
+    flex-direction: column;
+   
+}
+   
+
+.bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+
+.slidePage {
+    width:80px;
+    padding-top: 109px;
+}
+    .slidePage .active {
+        background:#fff;
+    }
+
+    .shoppingCart {
+        height: 65px;
+        background: var(--white);
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0px 20px;
+    }
+.sleft {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+.sleft i {
+    font-size:1.6rem;
+}
+
+.sright button {
+    font-size: 1.2rem;
+    border-radius: 21px;
+}
+.money, .number {
+    font-size: 1.2rem;
+    align-content: center;
+    text-align: center;
+}
+
+
+
+.money {
+    color: #FDBB66;
+    font-weight: 800;
+}
+

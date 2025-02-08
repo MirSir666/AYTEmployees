@@ -1,0 +1,43 @@
+﻿.content {
+    display:flex;
+    height:100vh;
+ 
+}
+
+.body {
+    flex: 1;
+    padding-top: 52px;
+    background: var(--defbac)
+}
+
+.mainbody{
+    display:flex;
+    padding:5px;
+    gap:20px;
+    flex-direction:column;
+}
+.search {
+    padding: 0px;
+    margin: 0px;
+    font-size: 30px;
+    color: #fff;
+    margin-right: 10px;
+    margin-top: 5px;
+    float: right;
+    z-index: 100;
+}
+
+.radius_10 {
+    border-radius: 10px 
+}
+.popup_content_item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+}
+
+.popup_content_item .label {
+    font-size: 1em;
+    font-weight: 500;
+}

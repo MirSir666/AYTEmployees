@@ -1,0 +1,16 @@
+﻿<div class=" background-defbac card_list ">
+    @foreach (var item in RoomStatusList)
+    {
+        <RoomCard RoomStatus=item OnRoomCardClick="OnRoomCardClick"></RoomCard>
+    }
+</div>
+@inject IServiceProvider serviceProvider
+@code {
+    [Parameter]
+    public List<RoomStatusItem> RoomStatusList { get; set; } = new List<RoomStatusItem>();
+
+    [Parameter]
+    public EventCallback<RoomStatusItem> OnRoomCardClick { get; set; }
+
+   
+}

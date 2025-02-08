@@ -1,0 +1,20 @@
+﻿<div class=" background-defbac card_list ">
+    @foreach (var technician in TechnicianStatusList)
+    {
+        <TechnicianCard TechnicianStatus=technician OnTechnicianCardClick="OnTechnicianCardClick"></TechnicianCard>
+    }
+    
+    
+
+</div>
+
+@code {
+    [Parameter]
+    public List<CurrentTechnicianListOutput> TechnicianStatusList { get; set; } = new List<CurrentTechnicianListOutput>();
+
+    [Parameter]
+    public EventCallback<CurrentTechnicianListOutput> OnTechnicianCardClick { get; set; }
+
+
+}
+

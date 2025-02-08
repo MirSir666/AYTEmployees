@@ -1,0 +1,72 @@
+﻿<div class="icard">
+    <div class="card_up @StatusClass()">
+        <div class="card_up_left">
+            <div class="t_status"><span class="text-small  radius padding">@TechnicianStatus.ClockStatusF</span></div>
+            <div class="t_name text-ellipsis">@TechnicianStatus.ArtificerName</div>
+            @if (TechnicianStatus.IsOvertime)
+            {
+                <div class="t_overtime"><span class="text-small  radius padding">加</span></div>
+            }
+           
+        </div>
+        <div class="card_up_right">
+            <div class="t_no">@TechnicianStatus.JobNumber</div>
+        </div>
+
+    </div>
+
+    <div class="card_down">
+        <div class="card_down_item">
+            @if (Status1.Contains(TechnicianStatus.ClockStatus))
+            {
+                <div class="card_down_item_circular color596A7B">@TechnicianStatus.CurrentWorkTypeShortName</div>
+                <div class="text-ellipsis">@TechnicianStatus.CurrentProjectName</div>
+                <div class="text-ellipsis">@TechnicianStatus.CurrentProjectTimeF</div>
+            }
+          
+        </div>
+        <div class="card_down_item">
+            <div class="card_down_item_circular colorFDBB66">@TechnicianStatus.ClassesShortName</div>
+            <div class="card_down_item_statistics">@TechnicianStatus.ClockStat</div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    List<string> Status1 = new List<string>() { "02", "03" };
+
+    [Parameter]
+    public CurrentTechnicianListOutput TechnicianStatus { get; set; }
+
+    [Parameter]
+    public EventCallback<CurrentTechnicianListOutput> OnTechnicianCardClick { get; set; }
+
+
+
+
+    public string StatusClass()
+    {
+
+
+        switch (TechnicianStatus.ClockStatus)
+        {
+            case "05":
+            case "06":
+            case "01":
+                return "bxiaban";
+            case "02":
+                return "daizhong";
+            case "03":
+                return "shangzhong";
+            case "04":
+                return "yuyue";
+            case "07":
+                return "quanpai";
+            default:
+                return "";
+        }
+
+    }
+}

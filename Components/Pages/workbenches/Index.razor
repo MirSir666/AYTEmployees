@@ -1,0 +1,481 @@
+﻿@page "/workbenches"
+@page "/"
+
+
+
+@layout MainLayout;
+<div class="content">
+    <div class="status @StatusClass()">
+        <div class="info">
+            <div class="item">
+                <p>@CurrentTechnician.ArtificerName</p>
+                <p>@CurrentTechnician.JobNumber</p>
+            </div>
+            <div class="item">
+                <p>@CurrentTechnician.PostName</p>
+                <p>@CurrentTechnician.GroupName @(CurrentTechnician.IsOvertime ? "(加班)":"")</p>
+            </div>
+        </div>
+        <div class="countdown">
+            @*    <p class="tiemStatus">等待/上钟</p> *@
+            <p class="tiemStatus">@(CurrentTechnician.ClockStatus == "03" ? "上钟" : "等待")  </p>
+            <p class="time">@TimeString</p>
+        </div>
+        <div class="clockStatus">
+            @{
+                if (CurrentTechnician.ClockStatus == "02" || CurrentTechnician.ClockStatus == "03")
+                {
+
+
+                    <p>房间号:@CurrentTechnician.CurrentRoomNum</p>
+                    <p>上钟类型:@CurrentTechnician.CurrentWorkTypeShortName</p>
+                    <p>项目名称:@CurrentTechnician.CurrentProjectName</p>
+                    <p>钟数:@CurrentTechnician.ClockStat</p>
+                    <p>下单时间:@CurrentTechnician.WaitingClockTime?.ToString("MM-dd HH:mm")</p>
+                    <p>状态:@CurrentTechnician.ClockStatusF</p>
+                }
+                else
+                {
+                    <p>房间号:--</p>
+                    <p>上钟类型:--</p>
+                    <p>项目名称:--</p>
+                    <p>钟数:--</p>
+                    <p>下单时间:--</p>
+                    <p>状态:--</p>
+                }
+
+            }
+
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="item1">
+            <div class="ibtn @BtnDisabledClass" @onclick=Refund>
+                <i class="iconfont icon-quxiao iicon"></i>
+                <p class="fontsize1">取消服务</p>
+            </div>
+            <div class="ibtn @BtnDisabledClass" @onclick=@(()=>ChangeArtificerRef.Show())>
+                <i class="iconfont icon-paigong-1 iicon"></i>
+                <p class="fontsize1">换人</p>
+            </div>
+            <div class="ibtn @BtnDisabledClass" @onclick=@(()=>ChangeProjecrRef.Show())>
+                <i class="iconfont icon-xiadan iicon"></i>
+                <p class="fontsize1">换项目</p>
+            </div>
+            <div class="ibtn @BtnDisabledClass">
+                <i class="iconfont icon-xiaoxi1 iicon" @onclick=@(()=>page.AsyncAlert("开发中 敬请期待！"))></i>
+                <p class="fontsize1">呼叫</p>
+            </div>
+
+
+        </div>
+        <div class="item2">
+            <div class="ibtn @BtnDisabledClass" @onclick=@(()=>page.AsyncAlert("开发中 敬请期待！"))>
+                <i class="iconfont icon-jiezhang"></i>
+                <p class="fontsize1">结账</p>
+            </div>
+            <div class="round @StatusClass()" @onclick=EndAndStart>
+                <label>@EndAndStartText</label>
+            </div>
+            <div class="ibtn @BtnDisabledClass" onclick="openModal('addClock')">
+                <i class="iconfont icon-tubiao_budan "></i>
+                <p class="fontsize1">加钟</p>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="item1">
+            <div class="ibtn " @onclick=@(() =>page.Goto("/workbenches/roomStatus"))>
+                <i class="iconfont icon-fangjian-wodefangjian iicon"></i>
+                <p class="fontsize1">房间状态</p>
+            </div>
+            <div class="ibtn" @onclick=@(() =>page.Goto("/workbenches/technicianStatus"))>
+                <i class="iconfont icon-tech iicon"></i>
+                <p class="fontsize1">技师状态</p>
+            </div>
+            <div class="ibtn" @onclick=@(()=>page.Goto("/selectRoom"))>
+                <i class="iconfont icon-xiadan iicon"></i>
+                <p class="fontsize1">下单</p>
+            </div>
+            <div class="ibtn" @onclick=@(()=>page.Goto("/attendance"))>
+                <i class="iconfont icon-icon_clocking iicon"></i>
+                <p class="fontsize1">考勤</p>
+            </div>
+        </div>
+    </div>
+
+
+    <MobileSelect TitleText="换人员" @ref=ChangeArtificerRef Data="ArtificerData" OnSuccess="ChangeArtificer"></MobileSelect>
+
+    <MobileSelect TitleText="换项目" @ref=ChangeProjecrRef Data="ProjecrData" OnSuccess="ChangeProjecr"></MobileSelect>
+
+
+
+</div>
+
+
+<AddClockPopup DetailNo=@CurrentTechnician.OfflineDetailNo ></AddClockPopup>
+
+
+
+
+@inject IBasePage page;
+@inject IWorkbenchesService workbenchesService
+@inject UI ui;
+@inject IEventAggregator eventAggregator;
+@implements IAsyncDisposable;
+@code {
+
+    private bool IsDispose = false;
+    [Parameter]
+    public CurrentTechnicianListOutput CurrentTechnician { get; set; } = new CurrentTechnicianListOutput();
+
+    public string TimeString { get; set; } = "00:00:00";
+
+    public List<MobileSelectItem> ArtificerData { get; set; } = new List<MobileSelectItem>()
+    {
+        new MobileSelectItem(){ Label="女", Value="1" },
+        new MobileSelectItem(){ Label="男",Value="2" },
+        new MobileSelectItem(){ Label="不限", Value=null }
+
+    };
+    public List<MobileSelectItem> ProjecrData { get; set; } = new List<MobileSelectItem>();
+
+
+    public DateTime? TickTime { get; set; }
+
+    public string EndAndStartText { get; set; }
+
+    private IDispatcherTimer timer;
+
+    MobileSelect ChangeArtificerRef;
+    MobileSelect ChangeProjecrRef;
+
+    [JSInvokable("test")]
+    public static async void test()
+    {
+        //tts.Speak("请24号技师到80房间上钟", 7);
+    }
+
+
+    public string BtnDisabledClass { get; set; }
+
+    public void EndAndStart()
+    {
+        if (CurrentTechnician.ClockStatus == "02")
+        {
+            ui.Working(async () =>
+             {
+                 var ret = await workbenchesService.StartWork();
+                 if (!ret.IsSuccess)
+                 {
+                     page.Alert(ret.Message,"提示");
+                 }
+             });
+
+            return;
+        }
+        else if (CurrentTechnician.ClockStatus=="03")
+        {
+
+            ui.Working(async () =>
+          {
+              var ret = await workbenchesService.EndWork();
+              if (!ret.IsSuccess)
+              {
+                  page.Alert(ret.Message, "提示");
+              }
+          });
+
+            return;
+        }
+
+
+    }
+
+    public string StatusClass()
+    {
+
+        /// 上钟状态 01：空闲  02：待钟 03：上钟 04：预约
+        /// 05:休假 06:下班 07:圈牌
+        switch (CurrentTechnician.ClockStatus)
+        {
+            case "05":
+            case "06":
+            case "01":
+                return "bxiaban";
+            case "02":
+                return "daizhong";
+            case "03":
+                return "shangzhong";
+            case "04":
+                return "yuyue";
+            case "07":
+                return "quanpai";
+            default:
+                return "";
+        }
+
+    }
+
+    public void addClock()
+    {
+
+
+    }
+
+    public void ChangeArtificer(object val)
+    {
+        ui.Working(async () =>
+        {
+            var ret = await workbenchesService.ChangeArtificer(new ChangeArtificerInput()
+                {
+                    DetailNo = CurrentTechnician.OfflineDetailNo,
+                    Sex = (string)val,
+                    ProjectId = CurrentTechnician.CurrentProjectId
+                });
+            if (ret.IsSuccess)
+            {
+
+            }
+
+        });
+
+    }
+
+    public void ChangeProjecr(object pid)
+    {
+        ui.Working(async () =>
+        {
+            var ret = await workbenchesService.ModOrderProjecrInfo(new ModOrderInput()
+                {
+                    DetailNo = CurrentTechnician.OfflineDetailNo,
+                    ProjectId = (long)pid
+                });
+            if (ret.IsSuccess)
+            {
+                InitEmployeesInfo();
+            }
+
+
+        });
+    }
+
+
+    public void Refund()
+    {
+        ui.Working(async () =>
+        {
+            var ret = await workbenchesService.Refund(CurrentTechnician.OfflineDetailNo);
+            if (!ret.IsSuccess)
+            {
+                await page.AsyncAlert(ret.Message);
+            }
+
+        });
+        // ui.Working(async () => { });
+
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        eventAggregator.Subscribe<string>(this, InitEmployeesInfo, UserConst.SendChangeArtificerStatusMessage);
+
+        //InitSignalR();
+        InitEmployeesInfo();
+        InitProjectList();
+
+    }
+    public void InitProjectList()
+    {
+        ui.Working(async () =>
+         {
+             var list = await workbenchesService.GetProjectListByArtifierId();
+             ProjecrData = list.Select(o => new MobileSelectItem() { Label = o.Name, Value = o.Value }).ToList();
+
+         });
+        //ProjecrData
+    }
+
+    public void InitEmployeesInfo(string a="")
+    {
+        ui.Working(async () =>
+        {
+            var ret = await workbenchesService.GetTechnicianInfo();
+            if (ret.IsSuccess)
+            {
+                CurrentTechnician = ret.Data;
+
+
+
+                if (CurrentTechnician.ClockStatus == "02")
+                {
+                    EndAndStartText = "启钟";
+                    TickTime = CurrentTechnician.WaitingClockTime;
+
+                    TimeStart();
+                    BtnDisabledClass = "";
+                }
+                else if (CurrentTechnician.ClockStatus == "03")
+                {
+                    EndAndStartText = "落钟";
+                    TickTime = CurrentTechnician.CurrentClockStartTime;
+
+                    TimeStart();
+                    BtnDisabledClass = "";
+                }
+                else
+                {
+                    TimeString = "00:00:00";
+                    EndAndStartText = CurrentTechnician.ClockStatusF;
+                    BtnDisabledClass = "btnDisabled";
+                    TimeStop();
+
+                }
+                page.BeginInvokeOnMainThread(() =>
+                {
+                    ChangeProjecrRef.SetCurrentValue(CurrentTechnician.CurrentProjectId);
+                });
+
+                await this.InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+
+            }
+        });
+
+    }
+
+    public void TimerTick(object? sender, EventArgs e)
+    {
+
+        if (TickTime != null &&  timer != null)
+        {
+            var ts = (DateTime.Now - TickTime).Value;
+            TimeString = $"{(ts.Hours + ts.Days * 24).ToString()?.PadLeft(2, '0')}:{ts.Minutes.ToString()?.PadLeft(2, '0')}:{ts.Seconds.ToString()?.PadLeft(2, '0')}";
+            this.StateHasChanged();
+        }
+    }
+
+    public void TimeStart()
+    {
+
+        timer = Application.Current.Dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += TimerTick;
+        timer.Start();
+    }
+
+    public void TimeStop()
+    {
+
+        if (timer != null)
+        {
+            timer.Tick -= TimerTick;
+            timer.Stop();
+            timer = null;
+
+        }
+    }
+
+    public async void InitSignalR()
+    {
+        IsDispose = false;
+
+       
+      
+        // var http = serviceProvider.GetRequiredService<HttpClient>();
+        // var url = $"{Preferences.Get(UserConst.ServiceUrl, "")}hub/employeesApp";
+        // hubConnection = new HubConnectionBuilder()
+        // .WithUrl(url, options =>
+        // {
+        //     options.Headers.Add("ClientType", "7");
+        //     options.Headers.Add("Ip", Utility.GetLocalIPAddress());
+        //     options.Headers.Add("Authorization", "Bearer " + Preferences.Get(UserConst.Token, default(string)));
+        //     options.Headers.Add("__tenant", Preferences.Get(UserConst.TenantId, default(string)));
+        // })
+        // .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.Zero, TimeSpan.FromSeconds(10) })
+        // .Build();
+        // hubConnection.KeepAliveInterval = TimeSpan.FromSeconds(60);
+        // // await  hubConnection.StopAsync();
+
+        // // hubConnection.Remove("SendChangeArtificerStatusMessage");
+        // // hubConnection.Remove("SendArtificeWaitingStatusMessage");
+
+
+        // //         #if ANDROID
+        // // #endif
+        // // //苹果的手机的写法 （需要跳过协商） https://www.cnblogs.com/yaopengfei/p/12622715.html
+        // // var connection = new signalR.HubConnectionBuilder().withUrl("http://xx.xx.xx.126:8088/chathub", {
+        // // skipNegotiation: true, //针对webSocket为默认协议的时候，可以跳过协商
+        // //             transport: signalR.HttpTransportType.WebSockets
+        // //                     })
+        // //      .withAutomaticReconnect([3000, 4000, 10000, 10000])
+        // //      .build();
+
+
+
+        // hubConnection.Closed += async (exception) =>
+        //     {
+        //         do
+        //         {
+        //             try
+        //             {
+        //                 await hubConnection.StartAsync();
+        //             }
+        //             catch (Exception ex)
+        //             {
+        //                 await Task.Delay(1000);
+        //             }
+
+        //         } while (!IsDispose && !(hubConnection.State == HubConnectionState.Connected));
+
+        //     };
+
+        // hubConnection.On("SendChangeArtificerStatusMessage", () =>
+        //                    {
+        //                        InitEmployeesInfo();
+        //                        // InitData();
+        //                    });
+
+        // hubConnection.On<string>("SendArtificeWaitingStatusMessage", meg =>
+        //                          {
+        //                              //上钟提醒
+        //                              this.InvokeAsync(() =>
+        //                              {
+        //                                  tts.Speak(meg);
+        //                              });
+        //                          });
+
+        // // hubConnection.On<ChatMessage>("ReceiveMessage", msg =>
+        // // {
+        // //     messageList.AddMessage(msg);
+        // //     StateHasChanged();
+        // // });
+
+        // await hubConnection.StartAsync();
+
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    
+    {
+
+        // if (hubConnection != null)
+        // {
+        //     IsDispose = true;
+        //     await hubConnection.StopAsync();
+        // }
+        TimeStop();
+
+        eventAggregator.UnsubscribeSingle<string>(this, UserConst.SendChangeArtificerStatusMessage);
+
+
+    }
+}

@@ -1,0 +1,116 @@
+﻿
+@layout NullLayout
+
+<div class="modal overlay" id="addClock">
+    <div class="modelwindow">
+        <div class="model_header">加钟</div>
+        <div class="model_content">
+            <div class="list">
+                <div class="item">
+                    <div class="lab">选择项目</div>
+                    <div class="right1">
+                
+                        <MobileInputSelect Placeholder="请选择项目" OnSuccess=ChangeValue Data=ProjecrData TitleText="选择项目" @ref=SelectProjectRef>
+
+
+                        </MobileInputSelect>
+                      @*   <InputSelect @bind-Value=ProjectId>
+                        <option value="1">Pending</option> @OnSuccess="OnSuccess"
+                            <option value="2">Active</option>
+                            <option value="3">Suspended</option>
+                        </InputSelect> *@
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="lab">加钟数量</div>
+                    <div class="right1">
+                        <Stepper @bind-Val=No ></Stepper>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="model_footer">
+            <button @onclick=OK>确定</button>
+            <button onclick="closeModal('addClock')">取消</button>
+        </div>
+    </div>
+
+</div>
+@inject IBasePage page;
+
+@inject IWorkbenchesService workbenchesService
+@inject UI ui;
+@code {
+    MobileInputSelect SelectProjectRef;
+
+
+    public List<MobileSelectItem> ProjecrData { get; set; } = new List<MobileSelectItem>();
+    // {
+    //     new MobileSelectItem(){ Label="23423",Value=1 },
+    //      new MobileSelectItem(){ Label="23423",Value=2 },
+    // };
+
+    public EventCallback<string> OnComplete { get; set; }
+
+    public long ProjectId { get; set; }
+
+    [Parameter]
+    public int No { get; set; }
+
+
+    [Parameter]
+    public string DetailNo { get; set; }
+
+    public void ChangeValue(object pid)
+    {
+        if (pid != null)
+            ProjectId = (long)pid;
+    }
+
+    public  void OK()
+    {
+        if (ProjectId != null)
+        {
+            ui.Working(async () =>
+            {
+                var ret = await workbenchesService.AddClock(new AddClockInput
+                    {
+                        DetailNo = DetailNo,
+                        Number = No,
+                        ProjectId = (long)ProjectId
+                    });
+
+                if (ret.IsSuccess)
+                {
+                    if (OnComplete.HasDelegate)
+                        OnComplete.InvokeAsync();
+                    page.UIJavaScriptRunAsync("closeModal", "addClock");
+
+                }
+            });
+           
+        }
+       
+      
+    }
+
+
+    public void InitProjectList()
+    {
+        ui.Working(async () =>
+         {
+             var list = await workbenchesService.GetProjectListByArtifierId();
+             ProjecrData = list.Select(o => new MobileSelectItem() { Label = o.Name, Value = o.Value }).ToList();
+             SelectProjectRef.SelectData(ProjecrData);
+
+         });
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        InitProjectList();
+
+    }
+}

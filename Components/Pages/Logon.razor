@@ -1,0 +1,115 @@
+﻿@page "/logon"
+@using AYTEmployees.HubClient
+@layout NullLayout
+<div class="wireframe">
+    <div class="content">
+        <div class="title opacity-90 ">
+            技师端登录
+        </div>
+        <div class="logon radius ">
+            <div class="tab ">
+                <button class="active" onclick="openTab('tabEvents')">账户密码登录</button>
+                <button onclick="openTab('tabMessages')">手机动态码登录</button>
+            </div>
+
+            <div class="list no-border">
+                <div class="item  border-grey border-bottom">
+                    <label>用户名</label>
+                    <input type="text" @bind=@LoginInput.UserName />
+                </div>
+                <div class="item  border-grey border-bottom">
+                    <label>密码</label>
+                    <input type="password" @bind=@LoginInput.Password />
+                </div>
+                <div class="item rememberMe">
+                    <input type="checkbox" @bind=RememberMe class="mobileui-check-input">
+                    <label class="check-text" >记住密码</label>
+    
+                </div>
+                <div class="item">
+                    <button class="blue radius full" @onclick=Login>登录</button>
+                </div>
+            </div>
+        </div>
+
+        @*     <div class="padding border-grey-400 shadow radius">
+        <p>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+        </div> *@
+
+    </div>
+</div>
+
+
+@inject ILogonService logonService;
+@inject IBasePage basePage;
+@code{
+
+
+
+    [Parameter]
+    public EventCallback<int> OnSuccess { get; set; }
+
+    public LoginInputVo LoginInput { get; set; } = new LoginInputVo();
+
+    public bool RememberMe { get; set; }
+
+    public async void Login()
+    {
+        try
+        {
+            var ret = await logonService.Login(LoginInput);
+            if (!ret.IsSuccess)
+            {
+                basePage.Alert(ret.Message, "登陆失败");
+                return;
+            }
+
+            Preferences.Set(UserConst.Token,ret.Data.Token);
+
+            var info = await logonService.GetUserAccount();
+            if (!info.IsSuccess)
+            {
+                basePage.Alert(info.Message, "登陆失败");
+                return;
+            }
+            Settings.SetObj(UserConst.CurrentUser, info.Data);
+            Preferences.Set(UserConst.TenantId, info.Data.CurrentStore.TenantId);
+
+            if (RememberMe)
+            {
+                Preferences.Set(UserConst.RememberMe, RememberMe);
+
+                Settings.SetObj(UserConst.LogonUser, LoginInput);
+            }
+            basePage.Home();
+            HubClientExtension.Start();
+            //OnSuccess.InvokeAsync(0);
+            //routesState.SetVal(true);
+            // MessagingCenter.Send<ModVisibleMessage, bool>("ModVisibleMessage",true);
+        }
+        catch (Exception ex)
+        {
+            basePage.Alert(ex.Message,"登陆失败");
+            // throw;
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Preferences.Set(UserConst.Token, "");
+        Preferences.Set(UserConst.TenantId, "");
+        Preferences.Set(UserConst.CurrentUser, "");
+
+        RememberMe = Preferences.Get(UserConst.RememberMe,default(bool));
+        if (RememberMe)
+        {
+            LoginInput = Settings.GetObj<LoginInputVo>(UserConst.LogonUser)??new LoginInputVo();
+            LoginInput = Settings.GetObj<LoginInputVo>(UserConst.LogonUser)??new LoginInputVo();
+        }
+    }
+}

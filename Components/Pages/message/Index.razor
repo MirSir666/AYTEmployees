@@ -1,0 +1,115 @@
+﻿@page "/message"
+<div class="content">
+    <div class="header blue ">
+        <h1 class="align-center">消息</h1>
+    </div>
+    <div class="body">
+        <div class="ilist">
+            @foreach (var meg in Datalist)
+            {
+                <div class="meg">
+                    <div class="meg_time">@meg.CreateTime?.ToString("yyyy-MM-dd HH:mm")</div>
+                    <div class="meg_content">
+                        <div class="meg_title">@meg.Title</div>
+                        <div class="meg_info">@meg.Body</div>
+                    </div>
+                </div>
+            }
+           
+
+         @*    <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div>
+
+            <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div>
+
+            <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div>
+
+            <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div>
+
+            <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div>
+
+            <div class="meg">
+                <div class="meg_time">2024年2月10号 17:50</div>
+                <div class="meg_content">
+                    <div class="meg_title">派工提示</div>
+                    <div class="meg_info">101 房 做经典足浴选择</div>
+                </div>
+            </div> *@
+
+
+        </div>
+  
+    </div>
+</div>
+
+
+@inject IBasePage page;
+@inject IMessageService service
+@inject UI ui;
+@inject IEventAggregator eventAggregator;
+@implements IAsyncDisposable;
+@code {
+    public List<NotificationMessageOutput> Datalist { get; set; } = new List<NotificationMessageOutput>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventAggregator.Subscribe<string>(this, InitData, UserConst.SendNotificationMessageArtificer);
+
+        InitData();
+    }
+
+    public void InitData(string n=null)
+    {
+
+        ui.Working(async () =>
+        {
+            var ret = await service.GetNotificationMessageList(new NotificationMessageSerarch() { });
+            if (ret.IsSuccess)
+            {
+                Datalist = ret.Data;
+
+                await this.InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+
+            }
+        });
+
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        eventAggregator.UnsubscribeSingle<string>(this, UserConst.SendNotificationMessageArtificer);
+    }
+
+}

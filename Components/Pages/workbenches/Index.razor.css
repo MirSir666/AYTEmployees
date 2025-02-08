@@ -1,0 +1,128 @@
+﻿.content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--defbac);
+    gap: 10px;
+    padding-bottom: 72px;
+}
+
+.status {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--white);
+    border-radius: 0px 0px 10px 10px;
+    padding:10px 20px;
+}
+
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}
+
+    .info .item {
+        display:flex;
+        flex-direction:row;
+        justify-content:space-between;
+        font-size: 1rem ;
+        font-weight: bold;
+    }
+
+.countdown {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-content:center;
+
+}
+    .countdown p {
+        display:flex;
+        justify-content:center;
+    }
+
+.time {
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.tiemStatus {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.clockStatus {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    grid-template-rows:repeat(3,1fr);
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+ /*   color: var(--white);*/
+    border-radius: 10px 10px 10px 10px;
+    padding: 10px 20px;
+    background-color:var(--white);
+    gap:10px;
+    
+}
+    .card .item1 {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+      
+    }
+
+        .card .item1 .ibtn {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            color: var(--blue);
+        }
+
+
+.fontsize1 {
+    font-size:16px;
+}
+
+.iicon {
+    font-size:36px;
+}
+
+
+.card .item2 {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    justify-items:center;
+
+}
+    .card .item2 .ibtn {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        font-size:1.5em;
+        color: var(--blue);
+    }
+
+.round {
+    border-radius: 50%;
+    height: 100px;
+    width: 100px;
+    color: #ffffff;
+    font-size: 1.8em;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btnDisabled {
+    pointer-events: none;
+    opacity: .65;
+}
+

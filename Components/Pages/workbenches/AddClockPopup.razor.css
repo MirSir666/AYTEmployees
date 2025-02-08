@@ -1,0 +1,27 @@
+﻿.model_content .list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+    .model_content .list .item {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+        .model_content .list .item .lab {
+            line-height: 40px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .model_content .list .item .right1 {
+            line-height: 40px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }

@@ -1,0 +1,138 @@
+﻿@layout NullLayout
+@page "/workbenches/technicianStatus"
+
+@inject NavigationManager Navigation
+<div class="content">
+    <div class="header blue ">
+        <button class="left icon ion-android-arrow-back" onclick="history.back();" name="button"></button>
+        <h1 class="align-center">技师状态</h1>
+        <button class="  icon-shaixuan iconfont search " @onclick=OpenSearch ></button>
+    </div>
+    <div class="body">
+        <div class="mainbody">
+            <div class="list ">
+                <TechnicianCardList TechnicianStatusList="TechnicianStatusList"></TechnicianCardList>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="menu menu-right white popup   " id="mySecondMenu">
+    <div class="popup_header  blue">
+        <h1 class="align-center">搜索</h1>
+    </div>
+    <div class="popup_content">
+        <div>
+            <div class="label">技能</div>
+            <div>
+                <MobileFromSelect TExample=long @ref=ProjectRef Data="ProjectData" OnChanged="ProjectChanged"></MobileFromSelect>
+            </div>
+        </div>
+
+        <div>
+            <div class="label">班组</div>
+            <div>
+                <MobileFromSelect TExample=long @ref=GroupRef Data="GroupData" OnChanged="GroupChanged"></MobileFromSelect>
+            </div>
+        </div>
+
+    </div>
+    <div class="popup_footer">
+        <button class="full blue " onclick="closeMenu('mySecondMenu')">取消</button>
+        <button class="full blue " onclick="closeMenu('mySecondMenu')">确定</button>
+    </div>
+
+</div>
+
+@inject IBasePage page;
+@inject IWorkbenchesService workbenchesService
+@inject UI ui;
+@code {
+    public List<CurrentTechnicianListOutput> TechnicianStatusList { get; set; } = new List<CurrentTechnicianListOutput>();
+
+    MobileFromSelect<long> ProjectRef;
+
+    public List<MobileFromSelectItem<long>> ProjectData { get; set; }
+    public List<long> ProjectList { get; set; }
+
+    public void ProjectChanged(long[] list)
+    {
+        ProjectList = list?.ToList();
+        InitData();
+
+    }
+
+
+    MobileFromSelect<long> GroupRef;
+
+    public List<MobileFromSelectItem<long>> GroupData { get; set; }
+    public List<long> GroupList { get; set; }
+
+    public void GroupChanged(long[] list)
+    {
+        GroupList = list?.ToList();
+        InitData();
+
+    }
+    bool IsFirst = true;
+    public void OpenSearch()
+    {
+        if (IsFirst)
+        {
+            GroupRef.SelectAll();
+            ProjectRef.SelectAll();
+            IsFirst = false;
+        }
+
+        page.JavaScriptRunAsync("openMenu", "mySecondMenu");
+    }
+
+    public async void IintQuery()
+    {
+
+        {
+            var list = await workbenchesService.GetTechnicianProjectsList(); ;
+            ProjectData = list.Select(o => new MobileFromSelectItem<long>() { Text = o.ProjectName, Value = o.ProjectId }).ToList();
+        }
+
+        {
+            var list = await workbenchesService.GetGroupList();
+            GroupData = list.Select(o => new MobileFromSelectItem<long>() { Text = o.Name, Value =(long) o.Value }).ToList();
+        }
+        StateHasChanged();
+
+    }
+
+    public void InitData()
+    {
+        ui.Working(async () =>
+    {
+        // var list = await workbenchesService.GetCurrentTechnicianList(new CurrentTechnicianListSearch());
+        // TechnicianStatusList = list;
+        //StateHasChanged();
+
+        var search = new CurrentTechnicianListSearch() { };
+
+        if (!IsFirst)
+        {
+            search.ProjectIds = ProjectList.ToList();
+            search.GroupIds = GroupList.ToList();
+        }
+      
+        TechnicianStatusList = await workbenchesService.GetCurrentTechnicianList(search);
+
+
+        StateHasChanged();
+
+    });
+
+    }
+
+    protected override void OnInitialized()
+    {
+        IintQuery();
+        InitData();
+       
+
+    }
+}
+

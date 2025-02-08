@@ -1,0 +1,45 @@
+﻿.content {
+    display: flex;
+    height: 100vh;
+}
+
+
+.body {
+    flex: 1;
+
+    background: var(--defbac);
+    flex-direction:row;
+}
+
+.ilist {
+    flex: auto;
+    display: flex;
+    padding-bottom: 91px;
+    padding-top: 52px;
+    flex-direction: column;
+}
+
+.meg {
+    display: flex;
+    flex-direction: column;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+.meg_time {
+    text-align: center;
+    padding-bottom:0.5rem;
+}
+
+.meg_content {
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    background-color: var(--white);
+    border-radius: 10px;
+    gap:1rem;
+}
+
+.meg_info {
+    font-size: 1.2rem;
+    font-weight: 400;
+}

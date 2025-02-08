@@ -1,0 +1,19 @@
+.header {
+    top:auto;
+    height:auto;
+}
+
+.navLink {
+    color: var(--white)
+}
+.tabtext {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+.iconfont {
+    font-size: 25px;
+    height:27px;
+    color: var(--white)
+}

@@ -1,0 +1,192 @@
+﻿@layout NullLayout
+@page "/workbenches/roomStatus"
+@inject NavigationManager Navigation
+<div class="content">
+    <div class="header blue ">
+        <button class="left icon ion-android-arrow-back" onclick="history.back();" name="button"></button>
+        <h1 class="align-center">房间状态</h1>
+        <button class="  icon-shaixuan iconfont search " @onclick=OpenSearch ></button>
+    </div>
+    <div class="body" >
+        <div class="mainbody">
+
+            <div class="list radius_10">
+                <RoomCardList RoomStatusList=@RoomStatusList OnRoomCardClick="roomCard"></RoomCardList>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="menu menu-right white popup   " id="mySecondMenu">
+    <div class="popup_header  blue">
+        <h1 class="align-center">搜索</h1>
+    </div>
+    <div class="popup_content">
+        <div class="popup_content_item">
+            <div class="label">房间类型</div>
+            <div>
+                <MobileFromSelect TExample=long @ref=RoomTypetRef Data="RoomTypeData"  OnChanged="RoomTypeOnChanged"></MobileFromSelect>
+            </div>
+        </div>
+
+        <div class="popup_content_item">
+            <div class="label">房间状态</div>
+            <div>
+                <MobileFromSelect TExample=int @ref=RoomPStatusRef Data="RoomPStatusData"  OnChanged="RoomStatusOnChanged"></MobileFromSelect>
+            </div>
+        </div>
+
+    </div>
+    <div class="popup_footer">
+        <button class="full blue " onclick="closeMenu('mySecondMenu')" >取消</button>
+        <button class="full blue " onclick="closeMenu('mySecondMenu')" >确定</button>
+    </div>
+   
+</div>
+
+@inject IBasePage page;
+@inject IWorkbenchesService workbenchesService
+@inject UI ui;
+@code {
+    public List<MobileFromSelectItem<long>> RoomTypeData { get; set; } = new List<MobileFromSelectItem<long>>();
+
+    public List<long> RoomTypeList { get; set; } = new List<long>();
+
+    MobileFromSelect<long> RoomTypetRef;
+
+    public List<MobileFromSelectItem<int>> RoomPStatusData { get; set; } = new List<MobileFromSelectItem<int>>();
+
+    public List<int> RoomPStatusList { get; set; } = new List<int>();
+
+    MobileFromSelect<int> RoomPStatusRef;
+
+    public List<RoomStatusItem> RoomStatusList { get; set; } = new List<RoomStatusItem>();
+
+
+    bool IsFirst = true;
+
+    public void roomCard(RoomStatusItem item)
+    {
+        var ee = item;
+
+    }
+
+    public void OpenSearch()
+    {
+        if (IsFirst)
+        {
+            RoomTypetRef.SelectAll();
+            RoomPStatusRef.SelectAll();
+            IsFirst = false;
+        }
+
+        page.JavaScriptRunAsync("openMenu", "mySecondMenu");
+    }
+
+    public async void IintQuery()
+    {
+        //GetRoomTypeList
+
+        var roomTypetask = await workbenchesService.GetRoomTypeList();
+
+        var roomStatustask = await workbenchesService.GetRoomStatusStatistics();
+
+        {
+            var list = roomTypetask;
+            RoomTypeData = list.Select(o => new MobileFromSelectItem<long>() { Text = o.RoomType, Value = o.RoomTypeId }).ToList();
+        }
+
+        {
+            var list = roomStatustask;
+            RoomPStatusData = list.Select(o => new MobileFromSelectItem<int>() { Text = o.Name + $"({o.Count})", Value = o.Value }).ToList();
+        }
+        StateHasChanged();
+
+    }
+
+    public void RoomStatusOnChanged(int[] list)
+    {
+        if (!RoomPStatusList.SequenceEqual(list))
+        {
+            RoomPStatusList = list.ToList();
+        }
+
+        InitData(search =>
+        {
+            search.StatusList = list.ToList() ;
+            return search;
+
+        });
+    }
+
+    public void RoomTypeOnChanged(long[] list)
+    {
+
+        if (!RoomTypeList.SequenceEqual(list))
+        {
+            RoomTypeList = list.ToList();
+        }
+
+        InitData(search =>
+        {
+            search.RoomTypeList = list.ToList();
+            return search;
+
+        });
+    }
+
+    public async void InitData(Func<GetRoomStatusListSearch, GetRoomStatusListSearch> action = null)
+    {
+        var search = new GetRoomStatusListSearch() {  };
+
+        if (!IsFirst)
+        {
+            search.RoomTypeList = RoomTypeList.ToList();
+            search.StatusList = RoomPStatusList.ToList();
+        }
+        if (action!=null)
+        {
+            search = action(search);
+        }
+        RoomStatusList = await workbenchesService.GetRoomStatusList(search);
+
+
+        StateHasChanged();
+
+    }
+    public void Ok()
+    {
+        
+    
+    }
+
+
+
+
+    protected override  void OnInitialized()
+    {
+
+        // StateHasChanged();
+        IintQuery();
+        InitData();
+        base.OnInitialized();
+        // RoomTypetRef.SelectAll();
+        // RoomPStatusRef.SelectAll();
+
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+        base.OnAfterRender(firstRender);
+        // if (firstRender)
+        // if (taskComplete)
+        // {
+        //     taskComplete = false;
+        //     RoomTypetRef.SelectAll();
+        //     RoomPStatusRef.SelectAll();
+         
+         
+        // }
+
+    }
+}
